@@ -1,0 +1,32 @@
+---
+id: bedroom_eva_ceiling_light_on
+alias: Bedroom Eva - Ceiling light on
+max_exceeded: silent
+trigger:
+  - id: bedroom_eva_switch_top_left
+    platform: device
+    domain: mqtt
+    device_id: 8cf6a875598638035406a6c34f99ffc6
+    type: action
+    subtype: press_1
+    discovery_id: 0x00000000017579ae action_press_1
+
+  - id: bedroom_eva_switch_top_right
+    platform: device
+    domain: mqtt
+    device_id: 8cf6a875598638035406a6c34f99ffc6
+    type: action
+    subtype: press_3
+    discovery_id: 0x00000000017579ae action_press_3
+
+  - id: bedroom_eva_switch_top
+    platform: device
+    domain: mqtt
+    device_id: 8cf6a875598638035406a6c34f99ffc6
+    type: action
+    subtype: press_1_and_3
+    discovery_id: 0x00000000017579ae action_press_1_and_3
+action:
+  - service: scene.turn_on
+    data:
+      entity_id: scene.bedroom_eva_lights_ceiling_on

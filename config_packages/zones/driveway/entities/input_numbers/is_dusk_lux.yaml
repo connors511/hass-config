@@ -1,0 +1,7 @@
+---
+driveway_is_dusk_lux:
+  name: Driveway dusk threshold
+  min: 0
+  max: 250
+  step: 5
+  unit_of_measurement: lx

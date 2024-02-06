@@ -1,0 +1,787 @@
+title: Lights
+path: lights
+id: lights
+type: custom:grid-layout
+layout: !include snippets/layout-4-column.yaml
+
+cards:
+  # Header
+  - type: markdown
+    card_mod:
+      style: !include snippets/style-markdown-titles.yaml
+    view_layout:
+      grid-column: 1/-1
+    content: >
+      ## Lights
+
+      {% set daylight = ( state_attr('sun.sun', 'next_rising') | as_timestamp(0) - state_attr('sun.sun', 'next_setting') | as_timestamp(0) ) | abs / 60 / 60 %}
+      {% set all_lights = states.light|rejectattr('attributes.is_hue_group', 'defined') | list %}
+      {% set on_lights = all_lights|selectattr('state', 'equalto', 'on') | list %}
+      You have {{ all_lights|count }} lights and {{ on_lights|count }} of them {{ iif((on_lights|count == 1), 'is', 'are') }} turned on.
+      There are {{ daylight | round(1) }} hours of daylight and {{ 24 - daylight | round(1) }} hours of nighttime today.
+
+  # Daylight
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Daylight
+        padding: 0
+        cards:
+          - type: "custom:auto-entities"
+            filter:
+              template: |
+                {% for state in states.input_number -%}
+                  {%- if state.entity_id | regex_match('input_number\..*lux',ignorecase=False) -%}
+                  {{
+                    { 'entity': state.entity_id,
+                      'type': 'custom:mushroom-number-card',
+                      'layout': 'horizontal'
+                    }
+                  }},
+                  {%- endif -%}
+                {%- endfor %}
+            sort:
+              method: friendly_name
+            card:
+              type: vertical-stack
+            card_param: cards
+
+      - type: "custom:decluttering-card"
+        template: multi_graph_card
+        variables:
+          - entities:
+              - entity: sensor.driveway_motion_sensor_illuminance_lux
+                name: Driveway
+              - entity: input_number.driveway_is_dark_lux
+                name: Darkness threshold
+                color: "#039be5"
+                show_fill: false
+              - entity: input_number.driveway_is_dusk_lux
+                name: Dusk threshold
+                color: "#FF4400"
+                show_fill: false
+          - title: Light Level
+          - line_width: 1
+
+  # Living room
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Living room
+        padding: 0
+        cards:
+          - type: "custom:auto-entities"
+            card:
+              type: grid
+              columns: 3
+              square: true
+            card_param: cards
+            entities:
+              - entity: input_boolean.downstairs_living_room_lights_manual_mode
+                type: custom:mushroom-entity-card
+                name: Manual mode
+                layout: vertical
+                secondary_info: none
+                fill_container: true
+                tap_action:
+                  action: toggle
+            filter:
+              template: |
+                {% for state in states.scene -%}
+                  {%- if state.entity_id | regex_match('scene.downstairs_living_room_lights_',ignorecase=False) -%}
+                    {%- set CONTROLLER = 'input_select.downstairs_living_room_lights_scene' -%}
+                    {%- set NAME = state_attr(state.entity_id,"friendly_name") | regex_replace(find='Downstairs living room - Lights - ', replace='') -%}
+                    {%- set ICON = iif(state_attr(state.entity_id, "icon") == none, 'mdi:play', state_attr(state.entity_id, "icon")) -%}
+                    {%- set ICON_COLOR = iif(is_state(CONTROLLER, NAME), 'var(--rgb-state-light)', none) -%}
+                    {{
+                      { 'entity': state.entity_id,
+                        'type': 'custom:mushroom-template-card',
+                        'layout': 'vertical',
+                        'primary': NAME,
+                        'icon': ICON,
+                        'icon_color': ICON_COLOR,
+                        'fill_container': true,
+                        'tap_action': {
+                          'action': 'call-service',
+                          'service': 'input_select.select_option',
+                          'service_data': {
+                            'entity_id': CONTROLLER,
+                            'option': NAME
+                          }
+                        }
+                      }
+                    }},
+                  {%- endif -%}
+                {%- endfor %}
+            sort:
+              method: friendly_name
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: "custom:decluttering-card"
+            template: mini_graph_tile
+            variables:
+              - title: Light Level
+              - entities:
+                  - entity: sensor.living_room_motion_sensor_illuminance_lux
+                    name: Living room
+                  - entity: input_number.downstairs_living_room_is_dark_lux
+                    name: Darkness threshold
+                    color: "#039be5"
+                    show_fill: false
+
+          - type: custom:mushroom-light-card
+            entity: light.living_room_speaker_left
+            name: Speaker left
+            layout: vertical
+            fill_container: true
+
+          - type: custom:mushroom-light-card
+            entity: light.living_room_speaker_right
+            name: Speaker right
+            layout: vertical
+            fill_container: true
+
+          - type: custom:mushroom-light-card
+            entity: light.living_room_floor_lamp
+            name: Floor lamp
+            layout: vertical
+            fill_container: true
+
+          - type: custom:mushroom-light-card
+            entity: light.living_room_hue_go
+            name: Hue Go
+            layout: vertical
+            fill_container: true
+
+  # Dining area
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Dining area
+        padding: 0
+        cards:
+          - type: "custom:auto-entities"
+            card:
+              type: grid
+              columns: 3
+              square: true
+            card_param: cards
+            entities:
+              - entity: input_boolean.downstairs_dining_area_lights_manual_mode
+                type: custom:mushroom-entity-card
+                name: Manual mode
+                layout: vertical
+                secondary_info: none
+                fill_container: true
+                tap_action:
+                  action: toggle
+            filter:
+              template: |
+                {% for state in states.scene -%}
+                  {%- if state.entity_id | regex_match('scene.downstairs_dining_area_lights_',ignorecase=False) -%}
+                    {%- set CONTROLLER = 'input_select.downstairs_dining_area_lights_scene' -%}
+                    {%- set NAME = state_attr(state.entity_id,"friendly_name") | regex_replace(find='Downstairs dining area - Lights - ', replace='') -%}
+                    {%- set ICON = iif(state_attr(state.entity_id, "icon") == none, 'mdi:play', state_attr(state.entity_id, "icon")) -%}
+                    {%- set ICON_COLOR = iif(is_state(CONTROLLER, NAME), 'var(--rgb-state-light)', none) -%}
+                    {{
+                      { 'entity': state.entity_id,
+                        'type': 'custom:mushroom-template-card',
+                        'layout': 'vertical',
+                        'primary': NAME,
+                        'icon': ICON,
+                        'icon_color': ICON_COLOR,
+                        'fill_container': true,
+                        'tap_action': {
+                          'action': 'call-service',
+                          'service': 'input_select.select_option',
+                          'service_data': {
+                            'entity_id': CONTROLLER,
+                            'option': NAME
+                          }
+                        }
+                      }
+                    }},
+                  {%- endif -%}
+                {%- endfor %}
+            sort:
+              method: friendly_name
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: "custom:decluttering-card"
+            template: mini_graph_tile
+            variables:
+              - entities:
+                  - entity: sensor.dining_area_motion_sensor_illuminance_lux
+                    name: Dining Area
+                  - entity: input_number.dining_area_is_dark_lux
+                    name: Darkness threshold
+                    color: "#039be5"
+                    show_fill: false
+              - title: Light Level
+
+          - type: custom:mushroom-light-card
+            entity: light.dining_area_ceiling
+            name: Ceiling
+            layout: vertical
+            fill_container: true
+
+  # Kitchen
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Kitchen
+        padding: 0
+        cards:
+          - type: "custom:auto-entities"
+            card:
+              type: grid
+              columns: 3
+              square: true
+            card_param: cards
+            entities:
+              - entity: input_boolean.kitchen_lights_manual_mode
+                type: custom:mushroom-entity-card
+                name: Manual mode
+                layout: vertical
+                secondary_info: none
+                fill_container: true
+                tap_action:
+                  action: toggle
+            filter:
+              template: |
+                {% for state in states.scene -%}
+                  {%- if state.entity_id | regex_match('scene.kitchen_lights_',ignorecase=False) -%}
+                    {%- set CONTROLLER = 'input_select.kitchen_lights_scene' -%}
+                    {%- set NAME = state_attr(state.entity_id,"friendly_name") | regex_replace(find='Kitchen - Lights - ', replace='') -%}
+                    {%- set ICON = iif(state_attr(state.entity_id, "icon") == none, 'mdi:play', state_attr(state.entity_id, "icon")) -%}
+                    {%- set ICON_COLOR = iif(is_state(CONTROLLER, NAME), 'var(--rgb-state-light)', none) -%}
+                    {{
+                      { 'entity': state.entity_id,
+                        'type': 'custom:mushroom-template-card',
+                        'layout': 'vertical',
+                        'primary': NAME,
+                        'icon': ICON,
+                        'icon_color': ICON_COLOR,
+                        'fill_container': true,
+                        'tap_action': {
+                          'action': 'call-service',
+                          'service': 'input_select.select_option',
+                          'service_data': {
+                            'entity_id': CONTROLLER,
+                            'option': NAME
+                          }
+                        }
+                      }
+                    }},
+                  {%- endif -%}
+                {%- endfor %}
+            sort:
+              method: friendly_name
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: "custom:decluttering-card"
+            template: mini_graph_tile
+            variables:
+              - entities:
+                  - entity: sensor.kitchen_motion_sensor_illuminance_lux
+                    name: Kitchen
+                  - entity: input_number.kitchen_is_dark_lux
+                    name: Darkness threshold
+                    color: "#039be5"
+                    show_fill: false
+              - title: Light Level
+
+          - type: custom:mushroom-light-card
+            entity: light.kitchen_front
+            name: Front
+            layout: vertical
+            fill_container: true
+
+          - type: custom:mushroom-light-card
+            entity: light.kitchen_rear
+            name: Rear
+            layout: vertical
+            fill_container: true
+
+  # Bedroom
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Bedroom
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.bedroom_ceiling
+            name: Ceiling
+            layout: vertical
+            fill_container: true
+
+          - type: custom:mushroom-light-card
+            entity: light.bedroom_nightstand_manyie
+            name: Man-Yie
+            layout: vertical
+            fill_container: true
+
+          - type: custom:mushroom-light-card
+            entity: light.bedroom_nightstand_bernd
+            name: Bernd
+            layout: vertical
+            fill_container: true
+
+  # Bedroom Eva
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Bedroom Eva
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.bedroom_eva_ceiling
+            name: Ceiling
+            layout: vertical
+            fill_container: true
+
+          - type: custom:mushroom-light-card
+            entity: light.bedroom_eva_nightlight
+            name: Nightlight
+            layout: vertical
+            fill_container: true
+
+  # Upstairs Office
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Upstairs office
+        padding: 0
+        cards:
+          - type: "custom:auto-entities"
+            card:
+              type: grid
+              columns: 3
+              square: true
+            card_param: cards
+            filter:
+              template: |
+                {% for state in states.scene -%}
+                  {%- if state.entity_id | regex_match('scene.upstairs_office_lights_',ignorecase=False) -%}
+                    {%- set CONTROLLER = 'input_select.upstairs_office_lights_scene' -%}
+                    {%- set NAME = state_attr(state.entity_id,"friendly_name") | regex_replace(find='Upstairs office - Lights - ', replace='') -%}
+                    {%- set ICON = iif(state_attr(state.entity_id, "icon") == none, 'mdi:play', state_attr(state.entity_id, "icon")) -%}
+                    {%- set ICON_COLOR = iif(is_state(CONTROLLER, NAME), 'var(--rgb-state-light)', none) -%}
+                    {{
+                      { 'entity': state.entity_id,
+                        'type': 'custom:mushroom-template-card',
+                        'layout': 'vertical',
+                        'primary': NAME,
+                        'icon': ICON,
+                        'icon_color': ICON_COLOR,
+                        'fill_container': true,
+                        'tap_action': {
+                          'action': 'call-service',
+                          'service': 'input_select.select_option',
+                          'service_data': {
+                            'entity_id': CONTROLLER,
+                            'option': NAME
+                          }
+                        }
+                      }
+                    }},
+                  {%- endif -%}
+                {%- endfor %}
+            sort:
+              method: friendly_name
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.upstairs_office_ceiling
+            name: Ceiling
+            layout: vertical
+            fill_container: true
+
+          - type: custom:mushroom-light-card
+            entity: light.upstairs_office_desk
+            name: Desk
+            layout: vertical
+            fill_container: true
+
+  # Attic office
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Attic office
+        padding: 0
+        cards:
+          - type: "custom:auto-entities"
+            card:
+              type: grid
+              columns: 3
+              square: true
+            card_param: cards
+            filter:
+              template: |
+                {% for state in states.scene -%}
+                  {%- if state.entity_id | regex_match('scene.attic_office_lights_',ignorecase=False) -%}
+                    {%- set CONTROLLER = 'input_select.attic_office_lights_scene' -%}
+                    {%- set NAME = state_attr(state.entity_id,"friendly_name") | regex_replace(find='Attic office - Lights - ', replace='') -%}
+                    {%- set ICON = iif(state_attr(state.entity_id, "icon") == none, 'mdi:play', state_attr(state.entity_id, "icon")) -%}
+                    {%- set ICON_COLOR = iif(is_state(CONTROLLER, NAME), 'var(--rgb-state-light)', none) -%}
+                    {{
+                      { 'entity': state.entity_id,
+                        'type': 'custom:mushroom-template-card',
+                        'layout': 'vertical',
+                        'primary': NAME,
+                        'icon': ICON,
+                        'icon_color': ICON_COLOR,
+                        'fill_container': true,
+                        'tap_action': {
+                          'action': 'call-service',
+                          'service': 'input_select.select_option',
+                          'service_data': {
+                            'entity_id': CONTROLLER,
+                            'option': NAME
+                          }
+                        }
+                      }
+                    }},
+                  {%- endif -%}
+                {%- endfor %}
+            sort:
+              method: friendly_name
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: "custom:decluttering-card"
+            template: mini_graph_tile
+            variables:
+              - entities:
+                  - entity: sensor.attic_office_motion_sensor_illuminance_lux
+                    name: Attic office
+                  - entity: input_number.attic_office_is_dark_lux
+                    name: Darkness threshold
+                    color: "#039be5"
+                    show_fill: false
+              - title: Light Level
+
+          - type: custom:mushroom-light-card
+            entity: light.attic_office_front_ceiling
+            name: Ceiling front
+            layout: vertical
+            fill_container: true
+
+          - type: custom:mushroom-light-card
+            entity: light.attic_office_rear_ceiling
+            name: Ceiling rear
+            layout: vertical
+            fill_container: true
+
+  # Downstairs hallway
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Downstairs hallway
+        padding: 0
+        cards:
+          - type: "custom:auto-entities"
+            card:
+              type: grid
+              columns: 3
+              square: true
+            card_param: cards
+            entities:
+              - entity: input_boolean.downstairs_hallway_lights_manual_mode
+                type: custom:mushroom-entity-card
+                name: Manual mode
+                layout: vertical
+                secondary_info: none
+                fill_container: true
+                tap_action:
+                  action: toggle
+            filter:
+              template: |
+                {% for state in states.scene -%}
+                  {%- if state.entity_id | regex_match('scene.downstairs_hallway_lights_',ignorecase=False) -%}
+                    {%- set CONTROLLER = 'input_select.downstairs_hallway_lights_scene' -%}
+                    {%- set NAME = state_attr(state.entity_id,"friendly_name") | regex_replace(find='Downstairs hallway - Lights - ', replace='') -%}
+                    {%- set ICON = iif(state_attr(state.entity_id, "icon") == none, 'mdi:play', state_attr(state.entity_id, "icon")) -%}
+                    {%- set ICON_COLOR = iif(is_state(CONTROLLER, NAME), 'var(--rgb-state-light)', none) -%}
+                    {{
+                      { 'entity': state.entity_id,
+                        'type': 'custom:mushroom-template-card',
+                        'layout': 'vertical',
+                        'primary': NAME,
+                        'icon': ICON,
+                        'icon_color': ICON_COLOR,
+                        'fill_container': true,
+                        'tap_action': {
+                          'action': 'call-service',
+                          'service': 'input_select.select_option',
+                          'service_data': {
+                            'entity_id': CONTROLLER,
+                            'option': NAME
+                          }
+                        }
+                      }
+                    }},
+                  {%- endif -%}
+                {%- endfor %}
+            sort:
+              method: friendly_name
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: "custom:decluttering-card"
+            template: mini_graph_tile
+            variables:
+              - entities:
+                  - entity: sensor.downstairs_hallway_illuminance
+                    name: Downstairs hallway
+                  - entity: input_number.downstairs_hallway_is_dark_lux
+                    name: Darkness threshold
+                    color: "#039be5"
+                    show_fill: false
+              - title: Light Level
+              - icon: mdi:brightness-5
+
+          - type: custom:mushroom-light-card
+            entity: light.downstairs_hallway_ceiling
+            name: Ceiling
+            layout: vertical
+            fill_container: true
+
+  # Upstairs hallway
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Upstairs hallway
+        padding: 0
+        cards:
+          - type: grid
+            columns: 3
+            square: true
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: input_boolean.upstairs_hallway_lights_manual_mode
+                name: Manual mode
+                layout: vertical
+                secondary_info: none
+                fill_container: true
+                tap_action:
+                  action: toggle
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.upstairs_hallway_ceiling
+            name: Ceiling
+            layout: vertical
+            fill_container: true
+
+  # Attic hallway
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Attic hallway
+        padding: 0
+        cards:
+          - type: grid
+            columns: 3
+            square: true
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: input_boolean.attic_hallway_lights_manual_mode
+                name: Manual mode
+                layout: vertical
+                secondary_info: none
+                fill_container: true
+                tap_action:
+                  action: toggle
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.attic_hallway_ceiling
+            name: Ceiling
+            layout: vertical
+            fill_container: true
+
+  # Driveway
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Driveway
+        padding: 0
+        cards:
+          - type: grid
+            columns: 3
+            square: true
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: input_boolean.driveway_lights_manual_mode
+                name: Manual mode
+                layout: vertical
+                secondary_info: none
+                fill_container: true
+                tap_action:
+                  action: toggle
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.driveway_wall
+            name: Wall
+            layout: vertical
+            fill_container: true
+
+  # Backyard
+  - type: vertical-stack
+    cards:
+      - type: custom:expander-card
+        clear: true
+        title-card:
+          type: markdown
+          card_mod:
+            style: !include snippets/style-markdown-titles.yaml
+          content: >
+            ### Backyard
+        padding: 0
+        cards:
+          - type: grid
+            columns: 3
+            square: true
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: input_boolean.backyard_lights_manual_mode
+                name: Manual mode
+                layout: vertical
+                secondary_info: none
+                fill_container: true
+                tap_action:
+                  action: toggle
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 33%)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.backyard_wall
+            name: Wall
+            layout: vertical
+            fill_container: true

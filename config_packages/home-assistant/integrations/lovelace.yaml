@@ -1,0 +1,16 @@
+---
+# Lovelace component for confuring the UI.
+#
+# https://www.home-assistant.io/lovelace/
+# https://www.home-assistant.io/lovelace/yaml-mode/
+#
+lovelace:
+  mode: yaml
+  resources: !include ../../../lovelace/resources.yaml
+  dashboards:
+    tablet-ui: # Needs to contain a hyphen (-)
+      mode: yaml
+      filename: ui-lovelace-tablet.yaml
+      title: Tablet
+      show_in_sidebar: false
+      require_admin: false

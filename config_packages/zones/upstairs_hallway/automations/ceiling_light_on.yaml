@@ -1,0 +1,39 @@
+---
+id: upstairs_hallway_ceiling_light_on
+alias: Upstairs Hallway - Ceiling light on
+max_exceeded: silent
+trigger:
+  - id: downstairs_hallway_stairs_switch_top_left
+    platform: device
+    domain: mqtt
+    device_id: 66e77759181c96a80d427dd55b3e0d75
+    type: action
+    subtype: press_1
+    discovery_id: 0x0000000001716b6f action_press_1
+
+  - id: downstairs_hallway_stairs_switch_top_right
+    platform: device
+    domain: mqtt
+    device_id: 66e77759181c96a80d427dd55b3e0d75
+    type: action
+    subtype: press_3
+    discovery_id: 0x0000000001716b6f action_press_3
+
+  - id: downstairs_hallway_stairs_switch_top
+    platform: device
+    domain: mqtt
+    device_id: 66e77759181c96a80d427dd55b3e0d75
+    type: action
+    subtype: press_1_and_3
+    discovery_id: 0x0000000001716b6f action_press_1_and_3
+
+  - id: upstairs_hallway_switch_top_right
+    platform: device
+    domain: mqtt
+    device_id: 4b41fc02c4f375ddbe1c405fe173600d
+    type: action
+    subtype: press_3
+    discovery_id: 0x0000000001716b46 action_press_3
+
+action:
+  - scene: scene.upstairs_hallway_lights_on

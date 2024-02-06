@@ -1,0 +1,11 @@
+---
+id: home_mode_bedtime_off
+alias: Home - Mode - Bedtime - Off
+trigger:
+  - platform: state
+    entity_id: input_boolean.home_modes_bedtime_mode
+    to: 'off'
+
+action: []
+  # Undim tablet audio
+  # TODO: Refactor to use fullykiosk automation

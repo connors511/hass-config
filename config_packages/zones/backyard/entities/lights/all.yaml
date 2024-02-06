@@ -1,0 +1,5 @@
+---
+platform: group
+name: Backyard
+entities:
+  - light.backyard_wall

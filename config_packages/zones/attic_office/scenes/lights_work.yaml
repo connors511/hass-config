@@ -1,0 +1,8 @@
+---
+name: Attic office - Lights - Work
+icon: mdi:briefcase
+entities:
+  light.attic_office_rear_ceiling:
+    state: 'on'
+    brightness: 200
+    color_temp: 319

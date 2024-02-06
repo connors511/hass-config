@@ -1,0 +1,363 @@
+title: Climate
+id: climate
+path: climate
+
+type: custom:grid-layout
+layout: !include snippets/layout-4-column.yaml
+
+cards:
+  # Header
+  - type: markdown
+    card_mod:
+      style: !include snippets/style-markdown-titles.yaml
+    view_layout:
+      grid-column: 1/-1
+    content: >
+      {% set all_thermostats = integration_entities('tado') | expand | selectattr('domain', 'eq', 'climate') | list %}
+      {% set on_thermostats = all_thermostats | selectattr('attributes.hvac_action', 'equalto', 'heating') | list %}
+
+      ## Climate
+
+      You have {{ all_thermostats|count }} thermostats and {{ on_thermostats|count }} of them {{ iif((on_thermostats|count == 1), 'is', 'are') }} heating.
+
+  # Outside
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Outside
+
+      - type: "custom:decluttering-card"
+        template: multi_graph_card
+        variables:
+          - title: Temperature
+          - entities:
+              - entity: sensor.home_outdoor_temperature
+                name: Driveway
+          - line_width: 1
+
+  # Living room
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Living room
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 1fr)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-climate-card
+            view_layout:
+              grid-column: span 3
+            name: Thermostat
+            entity: climate.living_room
+            hvac_modes:
+              - auto
+              - heat
+              - "off"
+            show_temperature_control: true
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 1
+            template: mini_graph_tile
+            variables:
+              - title: Temperature
+              - entities:
+                  - entity: sensor.living_room_temperature
+                    name: Temperature
+                  - entity: climate.living_room
+                    attribute: temperature
+                    name: Setpoint
+                    show_fill: false
+
+          - type: "custom:decluttering-card"
+            template: mini_graph_tile
+            view_layout:
+              grid-column: 2
+            variables:
+              - entities:
+                  - entity: sensor.living_room_humidity
+              - title: Humidity
+
+  # Bedroom
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Bedroom
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 1fr)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-climate-card
+            view_layout:
+              grid-column: span 3
+            name: Thermostat
+            entity: climate.bedroom
+            hvac_modes:
+              - auto
+              - heat
+              - "off"
+            show_temperature_control: true
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 1
+            template: mini_graph_tile
+            variables:
+              - title: Temperature
+              - entities:
+                  - entity: sensor.bedroom_temperature
+                    name: Temperature
+                  - entity: climate.bedroom
+                    attribute: temperature
+                    name: Setpoint
+                    show_fill: false
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 2
+            template: mini_graph_tile
+            variables:
+              - entities:
+                  - entity: sensor.bedroom_humidity
+              - title: Humidity
+
+  # Bedroom Eva
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Bedroom Eva
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 1fr)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-climate-card
+            view_layout:
+              grid-column: span 3
+            name: Thermostat
+            entity: climate.bedroom_eva
+            hvac_modes:
+              - auto
+              - heat
+              - "off"
+            show_temperature_control: true
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 1
+            template: mini_graph_tile
+            variables:
+              - title: Temperature
+              - entities:
+                  - entity: sensor.bedroom_eva_temperature
+                    name: Temperature
+                  - entity: climate.bedroom_eva
+                    attribute: temperature
+                    name: Setpoint
+                    show_fill: false
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 2
+            template: mini_graph_tile
+            variables:
+              - entities:
+                  - entity: sensor.bedroom_eva_humidity
+              - title: Humidity
+
+  # Upstairs office
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Upstairs office
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 1fr)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-climate-card
+            view_layout:
+              grid-column: span 3
+            name: Thermostat
+            entity: climate.upstairs_office
+            hvac_modes:
+              - auto
+              - heat
+              - "off"
+            show_temperature_control: true
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 1
+            template: mini_graph_tile
+            variables:
+              - title: Temperature
+              - entities:
+                  - entity: sensor.upstairs_office_temperature
+                    name: Temperature
+                  - entity: climate.upstairs_office
+                    attribute: temperature
+                    name: Setpoint
+                    show_fill: false
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 2
+            template: mini_graph_tile
+            variables:
+              - entities:
+                  - entity: sensor.upstairs_office_humidity
+              - title: Humidity
+
+  # Attic office
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Attic office
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 1fr)
+          margin: 0px
+        cards:
+          - type: custom:mushroom-climate-card
+            view_layout:
+              grid-column: span 3
+            name: Thermostat
+            entity: climate.attic_office
+            hvac_modes:
+              - auto
+              - heat
+              - "off"
+            show_temperature_control: true
+
+          - type: custom:mushroom-climate-card
+            view_layout:
+              grid-column: span 3
+            name: Air Conditioner
+            entity: climate.attic_office_air_conditioner
+            hvac_modes:
+              - heat
+              - dry
+              - cool
+              - fan_only
+              - "off"
+            show_temperature_control: true
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 1
+            template: mini_graph_tile
+            variables:
+              - title: Temperature
+              - entities:
+                  - entity: sensor.attic_office_temperature
+                    name: Temperature
+                  - entity: climate.attic_office
+                    attribute: temperature
+                    name: Setpoint
+                    show_fill: false
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 2
+            template: mini_graph_tile
+            variables:
+              - entities:
+                  - entity: sensor.attic_office_humidity
+              - title: Humidity
+
+  # Bathroom
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Bathroom
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 1fr)
+          margin: 0px
+        cards:
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 1
+            template: mini_graph_tile
+            variables:
+              - title: Temperature
+              - entities:
+                  - entity: sensor.bathroom_multisensor_temperature
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 2
+            template: mini_graph_tile
+            variables:
+              - title: Humidity
+              - entities:
+                  - entity: sensor.bathroom_multisensor_humidity
+
+  # Garage
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Garage
+
+      - type: "custom:layout-card"
+        layout_type: "custom:grid-layout"
+        layout:
+          grid-template-columns: repeat(3, 1fr)
+          margin: 0px
+        cards:
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 1
+            template: mini_graph_tile
+            variables:
+              - title: Temperature
+              - entities:
+                  - entity: sensor.downstairs_garage_multisensor_temperature
+
+          - type: "custom:decluttering-card"
+            view_layout:
+              grid-column: 2
+            template: mini_graph_tile
+            variables:
+              - title: Humidity
+              - entities:
+                  - entity: sensor.downstairs_garage_multisensor_humidity

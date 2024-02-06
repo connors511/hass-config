@@ -1,0 +1,298 @@
+title: Summary
+path: summary
+id: summary
+
+type: custom:grid-layout
+layout: !include snippets/layout-4-column.yaml
+
+cards:
+  # Header
+  - type: markdown
+    view_layout:
+      grid-column: 1/-1
+    card_mod:
+      style: !include snippets/style-markdown-titles.yaml
+    content: >
+      {%- set batterySensors = states.sensor | selectattr('attributes.device_class', 'defined') | selectattr('attributes.device_class', 'equalto', 'battery') | rejectattr('state', 'in', ['unavailable', 'unknown', 'None']) | list -%}
+      {%- set lowBatterySensors = batterySensors | map(attribute='state') | map('int') | select('<=', 30) | map('string') | list -%}
+
+      {%- set batteryBinarySensors = states.binary_sensor | selectattr('attributes.device_class', 'defined') | selectattr('attributes.device_class', 'equalto', 'battery') | rejectattr('state', 'in', ['unavailable', 'unknown', 'None']) | list -%}
+      {%- set lowBatteryBinarySensors = batteryBinarySensors | selectattr('state', 'equalto', 'on') | list -%}
+
+      {%- set lowBatteryDevicesCount = (lowBatterySensors | count) + (lowBatteryBinarySensors | count) -%}
+      # Good {{ states.sensor.system_time_of_day.state }}, {{ user }}.
+
+      {% if lowBatteryDevicesCount > 0 -%}
+      🚨 There {{ iif((lowBatteryDevicesCount == 1), 'is', 'are') }} {{ lowBatteryDevicesCount }} devices reporting low battery. Check the [Devices](/lovelace/devices) tab for more details! 🚨
+      {%- endif %}
+
+  # Security / Modes
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Security
+
+      - type: grid
+        columns: 3
+        square: true
+        cards:
+          - type: "custom:mushroom-template-card"
+            entity: alarm_control_panel.house
+            layout: vertical
+            icon: >
+              {{ state_attr(entity, "icon") }}
+            icon_color: >
+              {% if is_state(entity, 'disarmed') %}
+                var(--rgb-success-color)
+              {% elif is_state(entity, 'arming') %}
+                var(--rgb-warning-color)
+              {% elif is_state(entity, ['armed_away', 'armed_night', 'armed_home']) %}
+                var(--rgb-error-color)
+              {% endif %}
+            primary: Alarm
+            secondary: >
+              {{ states(entity) | capitalize }}
+            fill_container: true
+            tap_action: !include popups/alarm.yaml
+            # tap_action:
+            #   action: more-info
+
+          - type: "custom:mushroom-person-card"
+            entity: person.bernd
+            layout: vertical
+            fill_container: true
+            use_entity_picture: true
+
+          - type: "custom:mushroom-person-card"
+            entity: person.man_yie
+            layout: vertical
+            fill_container: true
+            use_entity_picture: true
+
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Modes
+
+      - type: grid
+        columns: 3
+        square: true
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: input_boolean.home_modes_away_mode
+            name: Away
+            icon: mdi:home
+            layout: vertical
+            secondary_info: state
+            fill_container: true
+            tap_action:
+              action: toggle
+              confirmation:
+                text: Are you sure you want to toggle Away Mode?
+
+          - type: custom:mushroom-entity-card
+            entity: input_boolean.home_modes_guest_mode
+            name: Guest
+            icon: mdi:human-handsup
+            layout: vertical
+            secondary_info: state
+            fill_container: true
+            tap_action:
+              action: toggle
+              confirmation:
+                text: Are you sure you want to toggle Guest Mode?
+
+          - type: custom:mushroom-entity-card
+            entity: input_boolean.home_modes_bedtime_mode
+            name: Bedtime
+            icon: mdi:sleep
+            layout: vertical
+            secondary_info: state
+            fill_container: true
+            tap_action:
+              action: toggle
+              confirmation:
+                text: Are you sure you want to toggle Bedtime Mode?
+
+          - type: custom:mushroom-entity-card
+            entity: input_boolean.home_modes_vacation_mode
+            name: Vacation
+            icon: mdi:airplane
+            layout: vertical
+            secondary_info: state
+            fill_container: true
+            tap_action:
+              action: toggle
+              confirmation:
+                text: Are you sure you want to toggle Vacation Mode?
+
+  # Climate / Energy
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Climate
+
+      - type: custom:mushroom-climate-card
+        name: Thermostat living room
+        entity: climate.living_room
+        hvac_modes: []
+        # show_temperature_control: true
+        fill_container: true
+
+      - type: custom:mushroom-fan-card
+        name: Central ventilation
+        entity: fan.itho_wifi_nrg_itho_dc8c_nrg_itho_dc8c_fan
+        # show_percentage_control: true
+        icon_animation: true
+        fill_container: true
+        tap_action:
+          action: more-info
+
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Energy
+
+      - type: "custom:decluttering-card"
+        template: mini_graph_tile
+        view_layout:
+          grid-column: span 3
+        variables:
+          - aspect_ratio: 2/1
+          - points_per_hour: 4
+          - entities:
+              - entity: sensor.dsmr_reading_electricity_currently_delivered_watt
+          - title: Total Energy Usage
+          - icon: "mdi:home-lightning-bolt"
+          - line_width: 2
+
+  # Trash
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Trash
+
+      - type: grid
+        columns: 3
+        square: true
+        cards:
+          - type: custom:mushroom-template-card
+            entity: sensor.afvalwijzer_restafval
+            layout: vertical
+            primary: Restafval
+            secondary: >
+              {{ states(entity) }}
+            fill_container: true
+            tap_action: none
+            icon: mdi:trash-can
+            icon_color: >
+              {% if states('sensor.afvalwijzer_today') == (entity | replace('sensor.afvalwijzer_', '')) %}
+                var(--rgb-error-color)
+              {% elif states('sensor.afvalwijzer_tomorrow') == (entity | replace('sensor.afvalwijzer_', '')) %}
+                var(--rgb-warning-color)
+              {% else %}
+                var(--rgb-disabled-color)
+              {% endif %}
+
+          - type: custom:mushroom-template-card
+            entity: sensor.afvalwijzer_gft
+            layout: vertical
+            primary: GFT
+            secondary: >
+              {{ states(entity) }}
+            fill_container: true
+            tap_action: none
+            icon: mdi:food-apple
+            icon_color: >
+              {% if states('sensor.afvalwijzer_today') == (entity | replace('sensor.afvalwijzer_', '')) %}
+                var(--rgb-error-color)
+              {% elif states('sensor.afvalwijzer_tomorrow') == (entity | replace('sensor.afvalwijzer_', '')) %}
+                var(--rgb-warning-color)
+              {% else %}
+                var(--rgb-disabled-color)
+              {% endif %}
+
+          - type: custom:mushroom-template-card
+            entity: sensor.afvalwijzer_pmd
+            layout: vertical
+            primary: PMD
+            secondary: >
+              {{ states(entity) }}
+            fill_container: true
+            tap_action: none
+            icon: mdi:bottle-soda
+            icon_color: >
+              {% if states('sensor.afvalwijzer_today') == (entity | replace('sensor.afvalwijzer_', '')) %}
+                var(--rgb-error-color)
+              {% elif states('sensor.afvalwijzer_tomorrow') == (entity | replace('sensor.afvalwijzer_', '')) %}
+                var(--rgb-warning-color)
+              {% else %}
+                var(--rgb-disabled-color)
+              {% endif %}
+
+          - type: custom:mushroom-template-card
+            entity: sensor.afvalwijzer_papier
+            layout: vertical
+            primary: Papier
+            secondary: >
+              {{ states(entity) }}
+            fill_container: true
+            tap_action: none
+            icon: mdi:file
+            icon_color: >
+              {% if states('sensor.afvalwijzer_today') == (entity | replace('sensor.afvalwijzer_', '')) %}
+                var(--rgb-error-color)
+              {% elif states('sensor.afvalwijzer_tomorrow') == (entity | replace('sensor.afvalwijzer_', '')) %}
+                var(--rgb-warning-color)
+              {% else %}
+                var(--rgb-disabled-color)
+              {% endif %}
+
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Devices
+
+      - type: grid
+        columns: 3
+        square: true
+        cards:
+          - type: custom:mushroom-template-card
+            entity: vacuum.valetudo_livingroom
+            layout: vertical
+            fill_container: true
+            primary: >
+              {{ state_attr(entity, 'friendly_name') }}
+            secondary: >
+              {{ states(entity) | capitalize }}
+            icon: mdi:robot-vacuum
+            icon_color: >
+              {% if is_state(entity, 'cleaning') %}
+                var(--rgb-warning-color)
+              {% endif %}
+
+          - type: custom:mushroom-template-card
+            entity: vacuum.valetudo_upstairs
+            layout: vertical
+            fill_container: true
+            primary: >
+              {{ state_attr(entity, 'friendly_name') }}
+            secondary: >
+              {{ states(entity) | capitalize }}
+            icon: mdi:robot-vacuum
+            icon_color: >
+              {% if is_state(entity, 'cleaning') %}
+                var(--rgb-warning-color)
+              {% endif %}

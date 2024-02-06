@@ -1,0 +1,34 @@
+title: Schedules
+path: schedules
+id: schedules
+type: custom:grid-layout
+layout: !include snippets/layout-2-column.yaml
+
+cards:
+  # Header
+  - type: markdown
+    card_mod:
+      style: !include snippets/style-markdown-titles.yaml
+    view_layout:
+      grid-column: 1/-1
+    content: >
+      ## Schedules
+
+  # Climate
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Climate
+
+      - type: custom:scheduler-card
+        title: ""
+        include:
+          - climate
+        card_mod:
+          style: |
+            ha-card {
+              --ha-card-background: transparent;
+            }

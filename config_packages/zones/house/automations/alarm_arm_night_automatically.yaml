@@ -1,0 +1,24 @@
+---
+id: home_alarm_arm_night_automatically
+alias: Home - Alarm - Arm Night automatically
+trigger:
+  - platform: state
+    entity_id: input_boolean.home_modes_bedtime_mode
+    to: "on"
+
+condition:
+  - condition: state
+    entity_id: alarm_control_panel.house
+    state: "disarmed"
+
+action:
+  # Dim tablet audio
+  # TODO: Refactor to use fullykiosk automation
+
+  - delay:
+      seconds: 2
+
+  # Arm alarm
+  - service: alarm_control_panel.alarm_arm_night
+    data:
+      entity_id: alarm_control_panel.house

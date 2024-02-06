@@ -1,0 +1,10 @@
+---
+  name: Upstairs office - Lights - Work
+  icon: mdi:briefcase
+  entities:
+    light.upstairs_office_desk:
+      state: 'off'
+    light.upstairs_office_ceiling:
+      state: 'on'
+      brightness: 254
+      color_temp: 260

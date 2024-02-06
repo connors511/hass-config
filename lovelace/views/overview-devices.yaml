@@ -1,0 +1,164 @@
+title: devices
+id: devices
+path: devices
+
+type: custom:grid-layout
+layout: !include snippets/layout-3-column.yaml
+
+cards:
+  # Header
+  - type: markdown
+    card_mod:
+      style: !include snippets/style-markdown-titles.yaml
+    view_layout:
+      grid-column: 1/-1
+    content: >
+      ## Devices
+
+  # Sonos
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Sonos
+
+      - type: tile
+        entity: media_player.living_room_sonos
+        name: Living Room
+        vertical: false
+        show_entity_picture: true
+
+      - type: tile
+        entity: media_player.living_room_sonos_move
+        name: Living Room Move
+        vertical: false
+        show_entity_picture: true
+
+      - type: tile
+        entity: media_player.kitchen_sonos
+        name: Kitchen
+        vertical: false
+        show_entity_picture: true
+
+      - type: tile
+        entity: media_player.upstairs_office_sonos
+        name: Upstairs Office
+        vertical: false
+        show_entity_picture: true
+
+      - type: tile
+        entity: media_player.bedroom_eva_sonos
+        name: Bedroom Eva
+        vertical: false
+        show_entity_picture: true
+
+  # Other media
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Other media
+
+      - type: tile
+        entity: sensor.downstairs_living_room_current_harmony_activity
+        name: Harmony activity
+        icon: mdi:remote
+        vertical: false
+        show_entity_picture: true
+        card_mod:
+          style: |
+            ha-tile-icon {
+              --tile-color:
+                {% if is_state(config.entity, 'PowerOff') %}
+                  var(--state-inactive-color)
+                {% else %}
+                  var(--tile-color)
+                {% endif %};
+            }
+
+      - type: tile
+        entity: binary_sensor.downstairs_living_room_media_playing
+        name: Media playback
+        vertical: false
+        show_entity_picture: true
+
+      - type: tile
+        entity: media_player.downstairs_living_room_denon_avr_x1500h
+        name: Receiver
+        vertical: false
+        show_entity_picture: true
+
+      - type: tile
+        entity: media_player.living_room_apple_tv
+        name: Apple TV
+        vertical: false
+        show_entity_picture: true
+
+  # Low battery
+  - type: vertical-stack
+    cards:
+      - type: markdown
+        card_mod:
+          style: !include snippets/style-markdown-titles.yaml
+        content: >
+          ### Low battery
+
+      - type: custom:auto-entities
+        show_empty: true
+        unique: true
+        card:
+          type: vertical-stack
+        card_param: cards
+        sort:
+          method: friendly_name
+        filter:
+          exclude:
+            - attributes:
+                battery_report: false
+          include:
+            - domain: sensor
+              attributes:
+                device_class: battery
+              state: <= 30
+              options:
+                type: custom:mushroom-template-card
+                entity_id: this.entity_id
+                primary: |
+                  {{ state_attr('this.entity_id', 'friendly_name') }}
+                secondary: |
+                  {{ states('this.entity_id') }} %
+                icon: |
+                  {% if state_attr('this.entity_id', 'icon') %}
+                    {{ state_attr('this.entity_id', 'icon') }}
+                  {% else %}
+                    {% set percentage = states('this.entity_id') | round(-1) | round %}
+                    mdi:battery-{{percentage}}
+                  {% endif %}
+                icon_color: |
+                  {% if (states('this.entity_id') | int) <= 15 %}
+                    red
+                  {% else %}
+                    orange
+                  {% endif %}
+                tap_action:
+                  action: more-info
+            - domain: binary_sensor
+              attributes:
+                device_class: battery
+              state: "on"
+              options:
+                type: custom:mushroom-template-card
+                entity_id: this.entity_id
+                primary: |
+                  {{ state_attr('this.entity_id', 'friendly_name') }}
+                icon: |
+                  {% if state_attr('this.entity_id', 'icon') %}
+                    {{ state_attr('this.entity_id', 'icon') }}
+                  {% else %}
+                    mdi:battery-10
+                  {% endif %}
+                icon_color: red

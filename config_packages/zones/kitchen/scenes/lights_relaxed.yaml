@@ -1,0 +1,10 @@
+---
+name: Kitchen - Lights - Relaxed
+icon: mdi:lightbulb-on-50
+entities:
+  light.kitchen_front:
+    state: 'on'
+    brightness: 100
+    color_temp: 366
+  light.kitchen_rear:
+    state: 'off'

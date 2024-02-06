@@ -1,0 +1,8 @@
+---
+name: Attic office - Lights - Chill
+icon: mdi:beach
+entities:
+  light.attic_office_rear_ceiling:
+    state: 'on'
+    brightness: 150
+    color_temp: 319

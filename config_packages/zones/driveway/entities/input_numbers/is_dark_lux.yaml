@@ -1,0 +1,7 @@
+---
+driveway_is_dark_lux:
+  name: Driveway darkness threshold
+  min: 0
+  max: 250
+  step: 5
+  unit_of_measurement: lx

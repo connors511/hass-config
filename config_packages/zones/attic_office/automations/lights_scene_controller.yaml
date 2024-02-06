@@ -1,0 +1,154 @@
+---
+id: attic_office_lights_scene_controller
+alias: Attic office - Lights - Scene controller
+max_exceeded: silent
+
+trigger:
+  - id: attic_office_switch_top_left
+    platform: device
+    domain: mqtt
+    device_id: 640c7e405eb4fb12ed8c214be0f40bf4
+    type: action
+    subtype: press_1
+    discovery_id: 0x00000000017611a7 action_press_1
+  - id: attic_office_switch_bottom_left
+    platform: device
+    domain: mqtt
+    device_id: 640c7e405eb4fb12ed8c214be0f40bf4
+    type: action
+    subtype: press_2
+    discovery_id: 0x00000000017611a7 action_press_2
+  - id: attic_office_switch_top_right
+    platform: device
+    domain: mqtt
+    device_id: 640c7e405eb4fb12ed8c214be0f40bf4
+    type: action
+    subtype: press_3
+    discovery_id: 0x00000000017611a7 action_press_3
+  - id: attic_office_switch_bottom_right
+    platform: device
+    domain: mqtt
+    device_id: 640c7e405eb4fb12ed8c214be0f40bf4
+    type: action
+    subtype: press_4
+    discovery_id: 0x00000000017611a7 action_press_4
+  - id: attic_office_switch_bottom_both
+    platform: device
+    domain: mqtt
+    device_id: 640c7e405eb4fb12ed8c214be0f40bf4
+    type: action
+    subtype: press_2_and_4
+    discovery_id: 0x00000000017611a7 press_2_and_4
+
+  - id: attic_office_remote_on
+    platform: device
+    domain: mqtt
+    device_id: df0f3d49be139fa0b32df312af3d9bf8
+    type: action
+    subtype: on-press
+    discovery_id: 0x0017880110493d0c action_on-press
+
+  - id: attic_office_motion_detected
+    platform: state
+    entity_id: binary_sensor.attic_office_motion_sensor_occupancy
+    from: "off"
+    to: "on"
+  - id: attic_office_motion_cleared
+    platform: state
+    entity_id: binary_sensor.attic_office_motion_sensor_occupancy
+    to: "off"
+    for:
+      minutes: 10
+
+  - id: attic_office_remote_off
+    platform: device
+    domain: mqtt
+    device_id: df0f3d49be139fa0b32df312af3d9bf8
+    type: action
+    subtype: off-press
+    discovery_id: 0x0017880110493d0c action_off-press
+
+  - id: lights_turned_off
+    platform: state
+    entity_id: light.attic
+    from: "on"
+    to: "off"
+
+action:
+  - alias: "choose scene based on trigger"
+    choose:
+      # Select "Work" scene
+      - conditions:
+          - and:
+              - or:
+                  - condition: trigger
+                    id: attic_office_switch_top_left
+                  - condition: trigger
+                    id: attic_office_remote_on
+                  - and:
+                      - condition: trigger
+                        id: attic_office_motion_detected
+                      - condition: state
+                        entity_id: binary_sensor.attic_office_is_dark
+                        state: "on"
+              - condition: state
+                entity_id: light.attic_office_rear_ceiling
+                state: "off"
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: input_select.attic_office_lights_scene
+              option: "Work"
+
+      # Loop through "On" scenes
+      - conditions:
+          - and:
+              - or:
+                  - condition: trigger
+                    id: attic_office_switch_top_left
+                  - condition: trigger
+                    id: attic_office_remote_on
+              - condition: state
+                entity_id: light.attic_office_rear_ceiling
+                state: "on"
+        sequence:
+          - service: script.input_select_next_with_skip
+            data:
+              entity_id: input_select.attic_office_lights_scene
+              skip_options:
+                - "Off"
+
+      # Select "off" scene
+      - conditions:
+          - or:
+              - condition: trigger
+                id: attic_office_switch_bottom_left
+              - condition: trigger
+                id: attic_office_switch_bottom_both
+              - alias: "Remote Off button"
+                condition: trigger
+                id: attic_office_remote_off
+              - condition: trigger
+                id: attic_office_motion_cleared
+              - alias: "Lights turned off otherwise"
+                condition: trigger
+                id: lights_turned_off
+        sequence:
+          - service: input_select.select_option
+            data:
+              entity_id: input_select.attic_office_lights_scene
+              option: "Off"
+
+      # Turn on front lights
+      - conditions:
+          - condition: trigger
+            id: attic_office_switch_top_right
+        sequence:
+          - scene: scene.attic_office_lights_front_full_brightness
+
+      # Turn off front lights
+      - conditions:
+          - condition: trigger
+            id: attic_office_switch_bottom_right
+        sequence:
+          - scene: scene.attic_office_lights_front_off

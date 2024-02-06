@@ -1,0 +1,7 @@
+---
+name: Backyard - Lights - On
+entities:
+  light.backyard_wall:
+    state: 'on'
+    brightness: 255
+    color_temp: 400

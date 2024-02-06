@@ -1,0 +1,35 @@
+- url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+  type: module
+
+- url: /hacsfiles/lovelace-layout-card/layout-card.js
+  type: module
+
+- url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js
+  type: module
+
+- url: /hacsfiles/alarmo-card/alarmo-card.js
+  type: module
+
+- url: /hacsfiles/sidebar-card/sidebar-card.js
+  type: module
+
+- url: /hacsfiles/lovelace-mushroom/mushroom.js
+  type: module
+
+- url: /hacsfiles/decluttering-card/decluttering-card.js
+  type: module
+
+- url: /hacsfiles/lovelace-multiple-entity-row/multiple-entity-row.js
+  type: module
+
+- url: /hacsfiles/scheduler-card/scheduler-card.js
+  type: module
+
+- url: /hacsfiles/lovelace-expander-card/expander-card.js
+  type: module
+
+- url: /local/css/font.css
+  type: css
+
+- url: https://unpkg.com/moment@2.29.3/min/moment.min.js
+  type: js

@@ -1,0 +1,31 @@
+---
+id: attic_hallway_ceiling_light_off
+alias: Attic hallway - Ceiling light off
+max_exceeded: silent
+trigger:
+  - id: attic_hallway_switch_bottom_left
+    platform: device
+    domain: mqtt
+    device_id: ac295e311ee3c53531cb01757bec6180
+    type: action
+    subtype: press_2
+    discovery_id: 0x00000000017611b0 action_press_2
+
+  - id: attic_hallway_switch_bottom_right
+    platform: device
+    domain: mqtt
+    device_id: ac295e311ee3c53531cb01757bec6180
+    type: action
+    subtype: press_4
+    discovery_id: 0x00000000017611b0 action_press_4
+
+  - id: upstairs_hallway_switch_bottom_left
+    platform: device
+    domain: mqtt
+    device_id: 4b41fc02c4f375ddbe1c405fe173600d
+    type: action
+    subtype: press_2
+    discovery_id: 0x0000000001716b46 action_press_2
+
+action:
+  - scene: scene.attic_hallway_lights_off

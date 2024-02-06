@@ -1,0 +1,16 @@
+---
+id: bedroom_trigger_bedtime_mode
+alias: Bedroom - Trigger bedtime mode
+trigger:
+  - platform: state
+    entity_id: binary_sensor.bedroom_both_in_bed
+    to: "on"
+    for: '00:00:30'
+condition:
+  and:
+    - condition: state
+      entity_id: input_boolean.home_modes_bedtime_mode
+      state: 'off'
+action:
+  - service: input_boolean.turn_on
+    entity_id: input_boolean.home_modes_bedtime_mode
